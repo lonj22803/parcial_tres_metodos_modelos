@@ -1,11 +1,20 @@
 from grafo import Grafo
 from labyrinth import Labyrinth
 import random
+import numpy as np
 
 if __name__ == '__main__':
     grafo = Grafo()
 
     posiciones_usada = set()
+    cuadros_usados = []
+
+
+    def obtener_cuadros_encerrados(cuadros_usados):
+        cuadros_encerrados = [x for x in cuadros_usados if cuadros_usados.count(x) > 1]
+        cuadros_encerrados = list(np.unique(cuadros_encerrados))
+        cuadros_encerrados = [int(x) for x in cuadros_encerrados]
+        return cuadros_encerrados
 
     def es_posicion_valida(i, tipo):
         if tipo == 'O':
@@ -97,8 +106,11 @@ if __name__ == '__main__':
         for a, b in aristas:
             grafo.add_edge(a, b, 0)
             posiciones_usada.add(a)
+            cuadros_usados.append(a)
             posiciones_usada.add(b)
+            cuadros_usados.append(b)
         return aristas
+
 
     # Crear lista de posiciones disponibles
     posiciones_disponibles = set(range(300))
@@ -133,16 +145,19 @@ if __name__ == '__main__':
         if i < 279:
             grafo.add_edge(i, i + 20, 1)
 
+
     # Generar tortugas aleatoriamente
     num_tortugas = random.randint(1, 10)
     turtle_list = {}
     posiciones_disponibles -= posiciones_usada
 
+
     for _ in range(num_tortugas):
         if not posiciones_disponibles:
             break
         pos = random.choice(list(posiciones_disponibles))
-        turtle_list[pos] = random.randint(1, 4)  # Puedes definir la lógica para asignar valores a las tortugas
+        posiciones_pos=[pos-1, pos+1, pos+20, pos-20]
+        turtle_list[pos] = random.choice(posiciones_pos) # Puedes definir la lógica para asignar valores a las tortugas
         posiciones_disponibles.discard(pos)
 
     # Asignar una posición de salida para una tortuga
@@ -154,13 +169,13 @@ if __name__ == '__main__':
 
     # Generar puntos verdes aleatoriamente
     colors_list = {}
-    num_puntos_verdes = random.randint(1, 10)
+    num_puntos_verdes = num_tortugas+1
 
     for _ in range(num_puntos_verdes):
         if not posiciones_disponibles:
             break
         pos = random.choice(list(posiciones_disponibles))
-        colors_list[pos] = 'green'
+        colors_list[pos] = 'red'
         posiciones_disponibles.discard(pos)
         posiciones_disponibles -= posiciones_usada
     print(colors_list)
@@ -173,6 +188,14 @@ if __name__ == '__main__':
     print("Posiciones usadas", sorted(posiciones_usada))
     # Mostrar la lista de tortugas
     print("Lista de tortugas", turtle_list)
+
+    # Mostrar las posiciones encerradas
+    cuadros_encerrados=obtener_cuadros_encerrados(cuadros_usados)
+    with open('cuadros_encerrados.txt', 'w') as f:
+        for item in cuadros_encerrados:
+            f.write("%s\n" % item)
+
+    print(cuadros_encerrados)
     # Guardar el grafo en el archivo
     grafo.save_graph(r'C:\Users\USER\PycharmProjects\labyrinth\graph_punto_dos.json')
     maze = Labyrinth(15, 20, path=r'C:\Users\USER\PycharmProjects\labyrinth\graph_punto_dos.json')
