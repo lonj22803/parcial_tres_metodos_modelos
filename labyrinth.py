@@ -235,7 +235,7 @@ class Labyrinth:
         self._delete_marks()
         for node, color in colors.items():
             center = self.tiles_centers[int(node)]
-            self._tiles_marks.append(self._draw_node(center, self.tile_length // 4, color))
+            self._tiles_marks.append(self._draw_node(center, self.tile_length // 8, color))
 
     def _delete_marks(self):
         """

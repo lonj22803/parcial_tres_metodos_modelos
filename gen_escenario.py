@@ -2,12 +2,23 @@ from grafo import Grafo
 from labyrinth import Labyrinth
 import random
 import numpy as np
+import shutil
 
 if __name__ == '__main__':
     grafo = Grafo()
 
     posiciones_usada = set()
     cuadros_usados = []
+
+
+    def backup_labyrinth(ruta):
+        original_json_path = ruta
+        backup_json_path = r'buckup.json'
+
+        # Copia del archivo original a uno de respaldo
+        shutil.copy(original_json_path, backup_json_path)
+
+        return backup_json_path
 
 
     def obtener_cuadros_encerrados(cuadros_usados):
@@ -197,6 +208,7 @@ if __name__ == '__main__':
 
     print(cuadros_encerrados)
     # Guardar el grafo en el archivo
-    grafo.save_graph(r'C:\Users\USER\PycharmProjects\labyrinth\graph_punto_dos.json')
-    maze = Labyrinth(15, 20, path=r'C:\Users\USER\PycharmProjects\labyrinth\graph_punto_dos.json')
+    grafo.save_graph(r'C:\Users\USER\parcial_tres_metodos_modelos\graph_generado.json')
+
+    maze = Labyrinth(15, 20, path=backup_labyrinth(r'C:\Users\USER\parcial_tres_metodos_modelos\graph_generado.json'))
     maze.start()
