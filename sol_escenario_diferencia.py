@@ -126,5 +126,5 @@ def main(tiempo):
     laberinto.start(auto_close=True, time=tiempo)
 
 if __name__ == "__main__":
-    main()
+    main(3000)
 

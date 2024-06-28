@@ -216,4 +216,4 @@ def escenario(n,tiempo):
     maze.start(auto_close=True, time=tiempo)
 
 if __name__ == '__main__':
-    escenario(3,3000)
+    escenario(2,3000)
