@@ -2,6 +2,9 @@ import json
 import heapq
 import shutil
 import threading
+import json
+import heapq
+import shutil
 import labyrinth
 
 def cargar_grafo(filename):
@@ -26,11 +29,11 @@ def es_valida(pos, nrows, ncols):
     row, col = divmod(pos, ncols)
     if not (0 <= row < nrows and 0 <= col < ncols):
         return False
-    
+
     # Verificar si la posición está en el borde derecho o izquierdo del laberinto
     if (col == 0 and pos - 1 != 0) or (col == ncols - 1 and pos + 1 != nrows * ncols):
         return False
-    
+
     return True
 
 def dijkstra(grafo, inicio, objetivo, posiciones_prohibidas, posiciones_bloqueadas, nrows, ncols):
@@ -70,6 +73,43 @@ def cargar_posiciones_prohibidas(filename):
         posiciones_prohibidas = [int(line.strip()) for line in file.readlines()]
     return posiciones_prohibidas
 
+def asignar_puntos_secuencial(tortugas, puntos_prioridad, secuencia_colores, nrows, ncols):
+    puntos_asignados = {}
+
+    for color in secuencia_colores:
+        puntos_disponibles = set(puntos_prioridad[color])
+        puntos_usados = set()
+
+        while puntos_disponibles and tortugas:
+            tortuga_cercana = None
+            punto_cercano = None
+            distancia_minima = float('inf')
+
+            for tortuga in tortugas:
+                tortuga_pos = int(tortuga)
+
+                for punto in puntos_disponibles:
+                    distancia = distancia_manhattan(tortuga_pos, punto, ncols)
+                    if distancia < distancia_minima:
+                        distancia_minima = distancia
+                        tortuga_cercana = tortuga
+                        punto_cercano = punto
+
+            if tortuga_cercana and punto_cercano:
+                if tortuga_cercana not in puntos_asignados:
+                    puntos_asignados[tortuga_cercana] = {}
+                puntos_asignados[tortuga_cercana][color] = punto_cercano
+                puntos_disponibles.remove(punto_cercano)
+                puntos_usados.add(punto_cercano)
+                tortugas.remove(tortuga_cercana)
+
+    return puntos_asignados
+
+def distancia_manhattan(pos1, pos2, ncols):
+    row1, col1 = divmod(pos1, ncols)
+    row2, col2 = divmod(pos2, ncols)
+    return abs(row1 - row2) + abs(col1 - col2)
+
 def guardar_solucion(filename, rutas_tortugas, type_method):
     with open(filename, "r") as file:
         data = json.load(file)
@@ -86,41 +126,49 @@ def main():
     nrows, ncols = 15, 20
     grafo = cargar_grafo('graph_generado.json')
     posiciones_prohibidas = cargar_posiciones_prohibidas('cuadros_encerrados.txt')
-    
+
     with open('graph_generado.json', 'r') as file:
         data = json.load(file)
 
     tortugas = list(data['turtle'].keys())
-    colores_prioridad = ['red', 'blue', 'green']
+    colores_prioridad = ['red', 'blue', 'green']  # Definir la prioridad de colores
     puntos_prioridad = {color: [int(k) for k, v in data['colors'].items() if v == color] for color in colores_prioridad}
-    
+
+    secuencia_colores = ['red', 'blue', 'green']  # Secuencia en la que deben procesarse los colores
+
+    # Asignación secuencial de puntos basada en la distancia más cercana y prioridad de colores
+    puntos_asignados = asignar_puntos_secuencial(tortugas, puntos_prioridad, secuencia_colores, nrows, ncols)
+
     rutas_tortugas = {}
     posiciones_bloqueadas = set()
 
-    for color in colores_prioridad:
-        puntos_colores = puntos_prioridad[color]
+    # Cálculo de rutas para cada tortuga basado en los puntos asignados
+    for tortuga, asignaciones in puntos_asignados.items():
+        inicio = int(tortuga)
+        ruta_tortuga = [inicio]  # Inicializar la ruta con la posición inicial de la tortuga
+        posiciones_bloqueadas_temp = set(posiciones_bloqueadas)  # Copiar las posiciones bloqueadas actuales
 
-        for tortuga in tortugas:
-            inicio = int(tortuga)
-            ruta_tortuga = [inicio]  # Inicializar la ruta con la posición inicial de la tortuga
-            posiciones_bloqueadas_temp = set(posiciones_bloqueadas)  # Copiar las posiciones bloqueadas actuales
-
-            for punto in puntos_colores:
-                objetivo = int(punto)
+        for color in secuencia_colores:
+            if color in asignaciones:
+                objetivo = asignaciones[color]
                 camino, distancia = dijkstra(grafo, inicio, objetivo, posiciones_prohibidas, posiciones_bloqueadas_temp, nrows, ncols)
                 if distancia < float('inf'):
                     ruta_tortuga.extend(camino[1:])  # Añadir la ruta encontrada a la ruta de la tortuga
                     inicio = objetivo  # Actualizar el inicio para el próximo punto
                     posiciones_bloqueadas_temp.add(objetivo)  # Bloquear esta posición para otras tortugas
 
-            if ruta_tortuga:
-                for i in range(len(ruta_tortuga) - 1):
-                    rutas_tortugas[ruta_tortuga[i]] = ruta_tortuga[i + 1]
-                rutas_tortugas[ruta_tortuga[-1]] = 'f'  # Marcar el objetivo como final
+        if ruta_tortuga:
+            for i in range(len(ruta_tortuga) - 1):
+                rutas_tortugas[ruta_tortuga[i]] = ruta_tortuga[i + 1]
+            rutas_tortugas[ruta_tortuga[-1]] = 'f'  # Marcar el objetivo como final
 
-            posiciones_bloqueadas.update(posiciones_bloqueadas_temp)  # Actualizar las posiciones bloqueadas
+        posiciones_bloqueadas.update(posiciones_bloqueadas_temp)  # Actualizar las posiciones bloqueadas
 
     guardar_solucion('graph_generado.json', rutas_tortugas, "Dijkstra")
+
+
+
+
 
 if __name__ == "__main__":
     hilo1 = threading.Thread(target=lambda: labyrinth.Labyrinth(15, 20, path=backup_labyrinth('graph_generado.json')).start())

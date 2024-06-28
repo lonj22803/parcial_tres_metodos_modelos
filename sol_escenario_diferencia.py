@@ -1,9 +1,7 @@
 import json
 import heapq
 import shutil
-import threading
 import labyrinth
-
 
 def cargar_grafo(filename):
     with open(filename, 'r') as file:
@@ -17,25 +15,22 @@ def cargar_grafo(filename):
                 grafo[int(nodo)].append((int(vecino), peso))
     return grafo
 
-
 def backup_labyrinth(ruta):
     original_json_path = ruta
     backup_json_path = 'backup.json'
     shutil.copy(original_json_path, backup_json_path)
     return backup_json_path
 
-
 def es_valida(pos, nrows, ncols):
     row, col = divmod(pos, ncols)
     if not (0 <= row < nrows and 0 <= col < ncols):
         return False
-
+    
     # Verificar si la posición está en el borde derecho o izquierdo del laberinto
     if (col == 0 and pos - 1 != 0) or (col == ncols - 1 and pos + 1 != nrows * ncols):
         return False
-
+    
     return True
-
 
 def dijkstra(grafo, inicio, objetivo, posiciones_prohibidas, posiciones_bloqueadas, nrows, ncols):
     cola = [(0, inicio)]
@@ -69,12 +64,10 @@ def dijkstra(grafo, inicio, objetivo, posiciones_prohibidas, posiciones_bloquead
 
     return camino, distancias[objetivo]
 
-
 def cargar_posiciones_prohibidas(filename):
     with open(filename, 'r') as file:
         posiciones_prohibidas = [int(line.strip()) for line in file.readlines()]
     return posiciones_prohibidas
-
 
 def guardar_solucion(filename, rutas_tortugas, type_method):
     with open(filename, "r") as file:
@@ -88,19 +81,18 @@ def guardar_solucion(filename, rutas_tortugas, type_method):
 
     print(f"Solucion guardada en {filename}")
 
-
-def main():
+def main(tiempo):
     nrows, ncols = 15, 20
     grafo = cargar_grafo('graph_generado.json')
     posiciones_prohibidas = cargar_posiciones_prohibidas('cuadros_encerrados.txt')
-
+    
     with open('graph_generado.json', 'r') as file:
         data = json.load(file)
 
     tortugas = list(data['turtle'].keys())
     colores_prioridad = ['red', 'blue', 'green']
     puntos_prioridad = {color: [int(k) for k, v in data['colors'].items() if v == color] for color in colores_prioridad}
-
+    
     rutas_tortugas = {}
     posiciones_bloqueadas = set()
 
@@ -114,8 +106,7 @@ def main():
 
             for punto in puntos_colores:
                 objetivo = int(punto)
-                camino, distancia = dijkstra(grafo, inicio, objetivo, posiciones_prohibidas, posiciones_bloqueadas_temp,
-                                             nrows, ncols)
+                camino, distancia = dijkstra(grafo, inicio, objetivo, posiciones_prohibidas, posiciones_bloqueadas_temp, nrows, ncols)
                 if distancia < float('inf'):
                     ruta_tortuga.extend(camino[1:])  # Añadir la ruta encontrada a la ruta de la tortuga
                     inicio = objetivo  # Actualizar el inicio para el próximo punto
@@ -130,19 +121,10 @@ def main():
 
     guardar_solucion('graph_generado.json', rutas_tortugas, "Dijkstra")
 
+    # Iniciar visualización del laberinto y las tortugas
+    laberinto = labyrinth.Labyrinth(nrows, ncols, path=backup_labyrinth('graph_generado_solucionDijkstra.json'))
+    laberinto.start(auto_close=True, time=tiempo)
 
 if __name__ == "__main__":
-    hilo1 = threading.Thread(
-        target=lambda: labyrinth.Labyrinth(15, 20, path=backup_labyrinth('graph_generado.json')).start())
-    hilo2 = threading.Thread(target=main)
-    hilo3 = threading.Thread(target=lambda: labyrinth.Labyrinth(15, 20, path=backup_labyrinth(
-        'graph_generado_solucionDijkstra.json')).start())
+    main()
 
-    hilo1.start()
-    hilo2.start()
-
-    hilo2.join()
-    hilo1.join()
-    hilo3.start()
-
-    hilo3.join()

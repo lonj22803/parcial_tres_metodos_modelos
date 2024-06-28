@@ -120,13 +120,15 @@ class Labyrinth:
         self.get_board()  # Generate the board for the labyrinth
         self.window.after(10, self.update_maze)  # Schedule the update_maze method to be called after 10 milliseconds
 
-    def start(self):
+    def start(self, auto_close=False,time=0):
         """
         Start the Tkinter event loop.
 
         This method starts the Tkinter event loop which waits for events and updates the GUI.
         It should be called after all widgets have been created and configured.
         """
+        if auto_close:
+            self.window.after(time, self.stop)
         self.window.mainloop()
 
     def _create_canvas(self):
@@ -444,8 +446,15 @@ class Labyrinth:
     def create_grid(self):
         pass
 
+    def stop(self):
+        """
+        This method stops the Tkinter event loop and destroys the window. It should be called to close the application
+        properly and release all the resources.
+        """
+        self.window.quit()  # Stop the Tkinter event loop
+        self.window.destroy()  # Destroy the Tkinter window
 
 if __name__ == '__main__':
     # maze = Labyrinth(2, 3, path='/dev/shm/graph.json')  # linux
     maze = Labyrinth(15, 15, path=r'C:\Users\USER\PycharmProjects\labyrinth\solucion_parcial\grafo1.json')  # windows
-    maze.start()
+    maze.start(auto_close=True, time=3000)

@@ -3,9 +3,8 @@ from labyrinth import Labyrinth
 import random
 import numpy as np
 import shutil
-import time
 
-def escenario(n,tiempo):
+def escenario_prioridad(n,tiempo):
     n=n-1
     grafo = Grafo()
 
@@ -180,18 +179,24 @@ def escenario(n,tiempo):
 
     grafo.turtle = turtle_list
 
-    # Generar puntos verdes aleatoriamente
+    # Generar puntos de varios colores aleatoriamente
     colors_list = {}
-    num_puntos_verdes = num_tortugas+1
+    num_puntos_colores = num_tortugas +1
 
-    for _ in range(num_puntos_verdes):
+    colores = ['red'] * num_puntos_colores + ['blue'] * num_puntos_colores + ['green'] * num_puntos_colores
+    random.shuffle(colores)  # Para mezclar las posiciones aleatoriamente
+
+    for color in colores:
         if not posiciones_disponibles:
             break
         pos = random.choice(list(posiciones_disponibles))
-        colors_list[pos] = 'red'
+        colors_list[pos] = color
         posiciones_disponibles.discard(pos)
         posiciones_disponibles -= posiciones_usada
+
     print(colors_list)
+    grafo.colors = colors_list
+
 
     grafo.colors = colors_list
 
@@ -210,10 +215,10 @@ def escenario(n,tiempo):
 
     print(cuadros_encerrados)
     # Guardar el grafo en el archivo
-    grafo.save_graph(r'C:\Users\USER\parcial_tres_metodos_modelos\graph_generado.json')
+    grafo.save_graph(r'graph_generado.json')
 
-    maze = Labyrinth(15, 20, path=backup_labyrinth(r'C:\Users\USER\parcial_tres_metodos_modelos\graph_generado.json'))
+    maze = Labyrinth(15, 20, path=backup_labyrinth(r'graph_generado.json'))
     maze.start(auto_close=True, time=tiempo)
 
-if __name__ == '__main__':
-    escenario(3,3000)
+if __name__ == "__main__":
+    escenario_prioridad(4,3000)
