@@ -210,9 +210,9 @@ def escenario(n,tiempo):
 
     print(cuadros_encerrados)
     # Guardar el grafo en el archivo
-    grafo.save_graph(r'C:\Users\USER\parcial_tres_metodos_modelos\graph_generado.json')
+    grafo.save_graph(r'graph_generado.json')
 
-    maze = Labyrinth(15, 20, path=backup_labyrinth(r'C:\Users\USER\parcial_tres_metodos_modelos\graph_generado.json'))
+    maze = Labyrinth(15, 20, path=backup_labyrinth(r'graph_generado.json'))
     maze.start(auto_close=True, time=tiempo)
 
 if __name__ == '__main__':
