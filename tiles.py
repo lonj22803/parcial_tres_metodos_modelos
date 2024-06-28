@@ -119,7 +119,7 @@ class Tile:
 
         # Construct the absolute path to the turtle image file
 
-        turtle_img_path = f"C:\\Users\\USER\\parcial_tres_metodos_modelos\\resources\\{turtle_img_size}\\turtle_{turtle_img_size}px_{self.turtle_orientation}.png"
+        turtle_img_path = f"resources\\{turtle_img_size}\\turtle_{turtle_img_size}px_{self.turtle_orientation}.png"
         return tk.PhotoImage(file=turtle_img_path)
 
     def draw(self, bg='lightblue', turtle=False):

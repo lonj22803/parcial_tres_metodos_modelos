@@ -456,5 +456,5 @@ class Labyrinth:
 
 if __name__ == '__main__':
     # maze = Labyrinth(2, 3, path='/dev/shm/graph.json')  # linux
-    maze = Labyrinth(15, 15, path=r'C:\Users\USER\PycharmProjects\labyrinth\solucion_parcial\grafo1.json')  # windows
+    maze = Labyrinth(15, 15, path=r'grafo1.json')  # windows
     maze.start(auto_close=True, time=3000)

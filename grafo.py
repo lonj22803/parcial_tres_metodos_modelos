@@ -187,6 +187,6 @@ if __name__ == '__main__':
     # Create a graph
     grafo = Grafo(vertex_list, edges_list, turtle_list, colors_list)
     # Save the graph as a json file
-    grafo.save_graph(r'C:\Users\USER\PycharmProjects\labyrinth\graph.json')
+    grafo.save_graph(r'graph.json')
     print(grafo)
 
